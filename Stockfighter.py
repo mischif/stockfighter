@@ -1,7 +1,7 @@
 ################################################################################
 #                           Stockfighter API Library                           #
 #                Put short description of script's purpose here                #
-#                               (C) 201X Mischif                               #
+#                               (C) 2015 Mischif                               #
 #       Released under version 3.0 of the Non-Profit Open Source License       #
 ################################################################################
 
