@@ -1,6 +1,6 @@
 ################################################################################
 #                           Stockfighter API Library                           #
-#                Put short description of script's purpose here                #
+#               Simple library to perform common in-game actions               #
 #                               (C) 2015 Mischif                               #
 #       Released under version 3.0 of the Non-Profit Open Source License       #
 ################################################################################

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 ################################################################################
-#                           Put The Script Name Here                           #
-#                Put short description of script's purpose here                #
+#                         Stockfighter API Test Script                         #
+#             Makes sure API endpoints do what they're supposed to             #
 #                               (C) 2015 Mischif                               #
 #       Released under version 3.0 of the Non-Profit Open Source License       #
 ################################################################################
@@ -86,9 +86,9 @@ def main():
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(
-		prog = "scriptname",
-		epilog = "Released under NP-OSL v3.0, (C) 201X Mischif",
-		description = "Short description of script's purpose.")
+		prog = "test.py",
+		description = "Makes sure API endpoints do what they're supposed to.",
+		epilog = "Released under NP-OSL v3.0, (C) 2015 Mischif")
 
 	parser.add_argument("apiKey",
 		default = api_key,
