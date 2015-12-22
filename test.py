@@ -15,7 +15,6 @@ import json
 import time
 import argparse
 from Stockfighter import API
-from ws4py.manager import WebSocketManager
 
 def prettify(obj):
 	return "\n" + json.dumps(obj, sort_keys=True, indent=4, separators=(',', ': '))
@@ -26,6 +25,7 @@ def main():
 	if not api.alive("TESTEX"): sys.exit()
 
 	acct = api.new_account("TESTEX", "EXB123456")
+	acct.fills_ticker.connect()
 
 	listings = acct.listings()
 	if not listings:
@@ -43,7 +43,7 @@ def main():
 	else:
 		print "Orderbook for {} on TESTEX: {}".format(stock["symbol"], prettify(book))
 
-	settle = acct.order("limit", "buy", stock["symbol"], 1017, 95)
+	settle = acct.order("market", "buy", stock["symbol"], 1017, 9500)
 	if not settle:
 		sys.exit("[-] Order not placed")
 	else:
@@ -61,32 +61,16 @@ def main():
 	else:
 		print "Result after canceling order: {}".format(prettify(ccl))
 
-	wsm = WebSocketManager()
+	acct.quotes_ticker.connect()
 
 	try:
-		wsm.start()
-		acct.quotes_ticker.add_manager(wsm.add)
-		acct.fills_ticker.add_manager(wsm.add)
-		acct.quotes_ticker.connect()
-		acct.fills_ticker.connect()
-
-		while True:
-			for ws in wsm.websockets.itervalues():
-				if not ws.terminated:
-					break
-			else:
-				break
-			time.sleep(1)
+		while True: time.sleep(5)
 	except KeyboardInterrupt:
-		wsm.close_all()
-		wsm.stop()
-		wsm.join()
-
-	sys.exit()
+		sys.exit()
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(
-		prog = "test.py",
+		prog = "scriptname",
 		description = "Makes sure API endpoints do what they're supposed to.",
 		epilog = "Released under NP-OSL v3.0, (C) 2015 Mischif")
 

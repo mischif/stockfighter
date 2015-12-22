@@ -5,11 +5,12 @@
 #       Released under version 3.0 of the Non-Profit Open Source License       #
 ################################################################################
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 
 import json
 import logging
 import requests
+import threading
 from ws4py.client.threadedclient import WebSocketClient
 
 class CustomLogs(logging.Formatter):
@@ -38,12 +39,16 @@ class Util(object):
 	ch.setFormatter(CustomLogs())
 	log.addHandler(ch)
 
+	@staticmethod
+	def prettify(obj):
+		return "\n" + json.dumps(obj, sort_keys=True, indent=4, separators=(',', ': '))
+
 	@classmethod
 	def ticker_callback(cls, m):
 		if m.is_text:
 			try:
 				msg = json.loads(m.data)
-				cls.log.debug("Websocket message: %s" % msg)
+				cls.log.debug("Websocket message: %s" % cls.prettify(msg))
 			except ValueError as e:
 					self.log.error("Websocket message isn't JSON: %s" % m.data)
 					pass
@@ -62,9 +67,9 @@ class Util(object):
 
 		if res:
 			if not venue:
-				cls.log.info("APIs are up")
+				cls.log.debug("APIs are up")
 			else:
-				cls.log.info("Venue is up")
+				cls.log.debug("Venue is up")
 			return True
 		return False
 
@@ -240,20 +245,32 @@ class GM(object):
 
 class Ticker(WebSocketClient):
 
+	def __init__(self, url):
+		super(Ticker, self).__init__(url)
+		self.manager = None
+		self.thread = threading.Thread(target = self.run_forever, args=())
+		self.thread.daemon = True
+
 	def handshake_ok(self):
 		Util.log.debug("Opened connection to %s" % self.peer_address[0])
 		if self.manager:
 			self.manager(self)
 			Util.log.debug("Attaching websocket to manager")
+		self._th.start()
 
 	def closed(self, code, reason):
 		Util.log.debug("Connection to %s closed" % self.peer_address)
+		self.thread.join()
 
 	def add_manager(self, man):
 		self.manager = man
 
-	def change_callback(self, cb):
+	def set_callback(self, cb):
 		self.received_message = cb
+
+	def connect(self):
+		super(Ticker, self).connect()
+		self.thread.start()
 
 	@staticmethod
 	def new_venue_quotes_ticker(acct, venue, cb = Util.ticker_callback):
@@ -459,9 +476,27 @@ class API(object):
 	def new_account(self, venue, acct):
 		return Account(venue, acct)
 
-	def alive(self, venue = None):
+	@staticmethod
+	def alive(venue = None):
 		return Util.dokidoki(venue)
 
-	def make_verbose(self, verbose):
+	@staticmethod
+	def log_crit(msg):
+		Util.log.critical(msg)
+
+	@staticmethod
+	def log_err(msg):
+		Util.log.error(msg)
+
+	@staticmethod
+	def log_info(msg):
+		Util.log.info(msg)
+
+	@staticmethod
+	def log_debug(msg):
+		Util.log.debug(msg)
+
+	@staticmethod
+	def make_verbose(verbose):
 		if verbose: Util.log.setLevel(logging.DEBUG)
 		else: Util.log.setLevel(logging.INFO)
